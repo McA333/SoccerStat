@@ -4,40 +4,29 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import numpy as np
 
-# ==========================================
-# CONFIGURATION
-# ==========================================
 st.set_page_config(page_title="Analyse Joueurs - Partie 3", layout="wide")
 
-# ==========================================
-# CHARGEMENT DES DONNÉES
-# ==========================================
-df = pd.read_csv("top5-players.csv")  # adapte à ton fichier
+
+df = pd.read_csv("top5-players.csv") 
 df.rename(columns={"Comp": "League"}, inplace=True)
 
 
-# Normalisation par 90 minutes
 df["Gls_90"] = df["Gls"] / (df["Min"] / 90)
 df["Ast_90"] = df["Ast"] / (df["Min"] / 90)
 df["GA_90"] = (df["Gls"] + df["Ast"]) / (df["Min"] / 90)
 
-# ==========================================
-# FILTRES UTILISATEUR
-# ==========================================
-st.sidebar.header("⚙️ Filtres")
+st.sidebar.header("Filtres")
 min_minutes = st.sidebar.slider("Minutes minimales", 0, 3000, 900, step=100)
 league_choice = st.sidebar.selectbox("Choisir une Ligue", ["Toutes"] + sorted(df["League"].unique().tolist()))
 player_choice = st.sidebar.selectbox("Comparer un joueur", ["Aucun"] + sorted(df["Player"].unique().tolist()))
 
-# Appliquer filtres
+
 filtered_df = df[df["Min"] >= min_minutes]
 if league_choice != "Toutes":
     filtered_df = filtered_df[filtered_df["League"] == league_choice]
 
-# ==========================================
-# SECTION 1 : COMPARAISON ENTRE LIGUES
-# ==========================================
-st.header("📊 Comparaison des Ligues")
+
+st.header(" Comparaison des Ligues")
 
 fig, ax = plt.subplots(1, 3, figsize=(18, 6))
 sns.boxplot(x="League", y="Gls", data=filtered_df, ax=ax[0], palette="Set2")
@@ -54,10 +43,7 @@ for a in ax:
 
 st.pyplot(fig)
 
-# ==========================================
-# SECTION 2 : TOP 5 JOUEURS PAR LIGUE (NORMALISÉ)
-# ==========================================
-st.header("🏆 Top 5 joueurs par Ligue (contribution offensive /90min)")
+st.header(" Top 5 joueurs par Ligue (contribution offensive /90min)")
 
 top_df = (
     filtered_df.groupby("League")
@@ -71,11 +57,9 @@ ax.set_xlabel("G+A / 90 min")
 ax.set_ylabel("Joueur")
 st.pyplot(fig)
 
-# ==========================================
-# SECTION 3 : RADAR CHART (COMPARAISON JOUEUR VS MOYENNE LIGUE)
-# ==========================================
+
 if player_choice != "Aucun":
-    st.header(f"🎯 Focus Joueur : {player_choice}")
+    st.header(f" Focus Joueur : {player_choice}")
 
     player_data = df[df["Player"] == player_choice].iloc[0]
     league_data = df[df["League"] == player_data["League"]]
@@ -102,15 +86,12 @@ if player_choice != "Aucun":
     ax.legend(loc="upper right")
     st.pyplot(fig)
 
-# ==========================================
-# SECTION 4 : EFFICACITÉ (xG vs Buts) -> OPTIONNEL
-# ==========================================
 if "xG" in df.columns:
-    st.header("⚡ Efficacité : Buts vs xG")
+    st.header(" Efficacité : Buts vs xG")
 
     fig, ax = plt.subplots(figsize=(8, 6))
     sns.scatterplot(data=filtered_df, x="xG", y="Gls", hue="League", alpha=0.7, palette="Set2")
-    ax.plot([0, filtered_df["xG"].max()], [0, filtered_df["xG"].max()], "r--")  # diagonale
+    ax.plot([0, filtered_df["xG"].max()], [0, filtered_df["xG"].max()], "r--") 
     ax.set_xlabel("xG cumulés")
     ax.set_ylabel("Buts marqués")
     st.pyplot(fig)
