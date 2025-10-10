@@ -103,12 +103,10 @@ def joueurs_stats_nv_experience():
     st.write(f"**{joueur_selectionne}** a atteint **{pourcentage_exp}%** de l'expérience maximale.")
 
 
-joueurs_stats_position()
+def call_my_functions() :
 
-st.divider()
-
-joueurs_stats_nb_buts()
-
-st.divider()
-
-joueurs_stats_nv_experience()
+    joueurs_stats_position()
+    st.divider()
+    joueurs_stats_nb_buts()
+    st.divider()
+    joueurs_stats_nv_experience()
