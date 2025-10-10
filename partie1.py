@@ -36,7 +36,7 @@ section = st.sidebar.radio("Aller à :", ["Accueil", "Joueurs par poste", "Joueu
 st.sidebar.divider()
 st.sidebar.write("Créé par : **MARIEMAVIE**")
 
-# SECTION 1 - ACCUEIL
+#SECTION 1 - ACCUEIL
 if section == "Accueil":
     st.title("Dashboard officiel de Rajeeva")
     st.markdown("""
@@ -49,7 +49,6 @@ if section == "Accueil":
     - Utiliser des filtres interactifs pour affiner votre analyse
     """)
 
-    # ---- Résumé global des données ----
     total_players = len(df)
     total_nations = df["Nation_code"].nunique()
     total_positions = df["Pos"].nunique()
@@ -64,7 +63,7 @@ if section == "Accueil":
 
     st.info("Utilisez le menu à gauche pour naviguer entre les sections.")
 
-# SECTION 2 - JOUEURS PAR POSTE
+#SECTION 2 - JOUEURS PAR POSTE
 elif section == "Joueurs par poste":
     st.header("Répartition des joueurs par poste")
     
@@ -84,11 +83,11 @@ elif section == "Joueurs par poste":
     col1.metric("Postes affichés", len(selected_postes))
     col2.metric("Total joueurs", len(filtered_df))
 
-# SECTION 3 - JOUEURS PAR NATION
+#SECTION 3 - JOUEURS PAR NATION
 elif section == "Joueurs par nation":
     st.header("Répartition des joueurs par nation")
 
-    # Option de tri dynamique
+    #Option de tri dynamique
     sort_option = st.radio(
         "Méthode de tri :",
         ["Top joueurs", "Ordre alphabétique"],
