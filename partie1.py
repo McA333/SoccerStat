@@ -4,6 +4,7 @@ import seaborn as sns
 import streamlit as st
 import plotly.express as px
 
+#CONFIGURATION DE LA PAGE
 st.set_page_config(page_title="MARIEMAVIE - SoccerStat", layout="wide")
 sns.set_theme(style="whitegrid")
 
@@ -17,7 +18,9 @@ st.markdown(
     unsafe_allow_html=True
 )
 
+#FONCTION 1 : LECTURE SÉCURISÉE
 def safe_read_csv(path):
+    """Essaye plusieurs séparateurs pour lire un CSV proprement."""
     for sep in [",", ";", "\t", "|"]:
         try:
             df = pd.read_csv(path, sep=sep)
@@ -27,6 +30,7 @@ def safe_read_csv(path):
             continue
     raise ValueError(f"Impossible de lire correctement le fichier : {path}")
 
+#FONCTION 2 : ACCUEIL
 def show_home(df):
     st.title("Dashboard officiel de Rajeeva")
     st.markdown("""
@@ -39,6 +43,7 @@ def show_home(df):
     - Utiliser des filtres interactifs pour affiner votre analyse
     """)
 
+    #Résumé global
     st.divider()
     st.subheader("Résumé global des données")
 
@@ -54,6 +59,8 @@ def show_home(df):
 
     st.info("Utilisez le menu à gauche pour naviguer entre les sections.")
 
+
+#FONCTION 3 : ANALYSE PAR POSTE
 def show_players_by_position(df):
     st.header("Répartition des joueurs par poste")
 
@@ -79,6 +86,8 @@ def show_players_by_position(df):
     col1.metric("Postes affichés", len(selected_postes))
     col2.metric("Total joueurs", len(filtered_df))
 
+
+#FONCTION 4 : ANALYSE PAR NATION
 def show_players_by_nation(df):
     st.header("Répartition des joueurs par nation")
 
@@ -91,6 +100,7 @@ def show_players_by_nation(df):
 
     col1, col2 = st.columns([2, 1])
 
+    # Graphique en barres
     with col1:
         fig, ax = plt.subplots(figsize=(10, 6))
         sns.barplot(x=nation_counts.values, y=nation_counts.index, palette="magma", ax=ax)
@@ -99,6 +109,7 @@ def show_players_by_nation(df):
         ax.set_ylabel("Nation")
         st.pyplot(fig)
 
+    #Diagramme circulaire
     with col2:
         st.subheader("Répartition interactive")
         pie_data = nation_counts.copy()
@@ -124,6 +135,7 @@ def show_players_by_nation(df):
 
     st.info(f"Le top {top_n} inclut les nations les plus représentées.")
 
+    #Carte
     st.subheader("Répartition géographique")
     show_all = st.checkbox("Afficher toutes les nations sur la carte", value=False)
 
@@ -143,3 +155,26 @@ def show_players_by_nation(df):
         title=map_title,
     )
     st.plotly_chart(fig_map, use_container_width=True)
+
+
+#main
+def main():
+    df = safe_read_csv("top5-players.csv")
+    df = df.drop_duplicates().dropna(how="all")
+    df["Nation_code"] = df["Nation"].str.split(" ").str[-1]
+
+    st.sidebar.header("Filtres & Navigation")
+    section = st.sidebar.radio("Aller à :", ["Accueil", "Joueurs par poste", "Joueurs par nation"])
+    st.sidebar.divider()
+    st.sidebar.write("Créé par : **MARIEMAVIE**")
+
+    if section == "Accueil":
+        show_home(df)
+    elif section == "Joueurs par poste":
+        show_players_by_position(df)
+    else:
+        show_players_by_nation(df)
+
+
+if __name__ == "__main__":
+    main()
