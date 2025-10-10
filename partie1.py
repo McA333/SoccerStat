@@ -2,6 +2,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 import streamlit as st
+import plotly.express as px
 
 st.set_page_config(page_title="MARIEMAVIE - SoccerStat", layout="wide")
 
@@ -35,6 +36,7 @@ section = st.sidebar.radio("Aller à :", ["Accueil", "Joueurs par poste", "Joueu
 st.sidebar.divider()
 st.sidebar.write("Créé par : **MARIEMAVIE**")
 
+# SECTION 1 - ACCUEIL
 if section == "Accueil":
     st.title("Dashboard officiel de Rajeeva")
     st.markdown("""
@@ -46,8 +48,23 @@ if section == "Accueil":
     - La représentation par nation  
     - Utiliser des filtres interactifs pour affiner votre analyse
     """)
+
+    # ---- Résumé global des données ----
+    total_players = len(df)
+    total_nations = df["Nation_code"].nunique()
+    total_positions = df["Pos"].nunique()
+
+    st.divider()
+    st.subheader("Résumé global des données")
+    col1, col2, col3 = st.columns(3)
+    col1.metric("Nombre total de joueurs", total_players)
+    col2.metric("Nombre de nations", total_nations)
+    col3.metric("Nombre de postes", total_positions)
+    st.divider()
+
     st.info("Utilisez le menu à gauche pour naviguer entre les sections.")
 
+# SECTION 2 - JOUEURS PAR POSTE
 elif section == "Joueurs par poste":
     st.header("Répartition des joueurs par poste")
     
@@ -67,11 +84,26 @@ elif section == "Joueurs par poste":
     col1.metric("Postes affichés", len(selected_postes))
     col2.metric("Total joueurs", len(filtered_df))
 
+# SECTION 3 - JOUEURS PAR NATION
 elif section == "Joueurs par nation":
     st.header("Répartition des joueurs par nation")
 
+    # Option de tri dynamique
+    sort_option = st.radio(
+        "Méthode de tri :",
+        ["Top joueurs", "Ordre alphabétique"],
+        horizontal=True
+    )
+
     top_n = st.slider("Choisissez combien de nations afficher :", 5, 30, 15)
-    nation_counts = df["Nation_code"].value_counts().head(top_n)
+    nation_counts = df["Nation_code"].value_counts()
+
+    if sort_option == "Ordre alphabétique":
+        nation_counts = nation_counts.sort_index()
+    else:
+        nation_counts = nation_counts.sort_values(ascending=False)
+
+    nation_counts = nation_counts.head(top_n)
 
     col1, col2 = st.columns([2, 1])
 
@@ -84,16 +116,50 @@ elif section == "Joueurs par nation":
         st.pyplot(fig)
 
     with col2:
-        st.subheader("Répartition (camembert)")
-        fig2, ax2 = plt.subplots(figsize=(4, 4))
-        ax2.pie(
-            nation_counts.values,
-            labels=nation_counts.index,
-            autopct="%1.1f%%",
-            startangle=90,
-            colors=sns.color_palette("magma", len(nation_counts))
+        st.subheader("Répartition interactive")
+
+        pie_data = nation_counts.copy()
+        if len(pie_data) > 8:
+            autres = pie_data[8:].sum()
+            pie_data = pie_data.head(8)
+            pie_data.loc["Autres"] = autres
+
+        pie_df = pie_data.reset_index()
+        pie_df.columns = ["Nation_code", "count"]
+
+        fig_pie = px.pie(
+            pie_df,
+            names="Nation_code",
+            values="count",
+            color="Nation_code",
+            color_discrete_sequence=px.colors.sequential.Magma,
+            title="Répartition des nations (interactif)",
+            hole=0.4
         )
-        ax2.axis("equal")
-        st.pyplot(fig2)
+        fig_pie.update_traces(textposition="inside", textinfo="percent+label")
+        fig_pie.update_layout(showlegend=True, legend_title_text="Nation")
+        st.plotly_chart(fig_pie, use_container_width=True)
 
     st.info(f"Le top {top_n} inclut les nations les plus représentées dans les 5 grands championnats.")
+
+    st.subheader("Répartition géographique")
+
+    show_all = st.checkbox("Afficher toutes les nations sur la carte", value=False)
+
+    if show_all:
+        map_data = df["Nation_code"].value_counts().reset_index()
+        map_data.columns = ["Nation_code", "Joueurs"]
+        map_title = "Répartition mondiale de toutes les nations"
+    else:
+        map_data = nation_counts.reset_index()
+        map_data.columns = ["Nation_code", "Joueurs"]
+        map_title = f"Répartition géographique des {top_n} nations"
+
+    fig_map = px.choropleth(
+        map_data,
+        locations="Nation_code",
+        color="Joueurs",
+        color_continuous_scale="magma",
+        title=map_title,
+    )
+    st.plotly_chart(fig_map, use_container_width=True)
