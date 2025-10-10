@@ -6,12 +6,6 @@ import numpy as np
 
 st.set_page_config(page_title="Analyse Joueurs - Partie 3", layout="wide")
 
-def main():
-    df = load_data()
-    df = preprocess_data(df)
-    show_sidebar(df)
-    render_analysis(df)
-
 def load_data():
     df = pd.read_csv("top5-players.csv")
     df.rename(columns={"Comp": "League"}, inplace=True)
@@ -33,10 +27,13 @@ def render_analysis(df):
     filtered_df = df[df["Min"] >= st.session_state.min_minutes]
     if st.session_state.league_choice != "Toutes":
         filtered_df = filtered_df[filtered_df["League"] == st.session_state.league_choice]
+
     show_league_comparison(filtered_df)
     show_top_players(filtered_df)
+
     if st.session_state.player_choice != "Aucun":
         show_player_focus(df, st.session_state.player_choice)
+
     if "xG" in df.columns:
         show_efficiency_plot(filtered_df)
 
@@ -96,6 +93,3 @@ def show_efficiency_plot(filtered_df):
     ax.set_xlabel("xG cumulés")
     ax.set_ylabel("Buts marqués")
     st.pyplot(fig)
-
-if __name__ == "__main__":
-    main()
