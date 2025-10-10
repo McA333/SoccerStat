@@ -4,16 +4,16 @@ import partie3
 
 st.set_page_config(page_title="SoccerStat - Dashboard global", layout="wide")
 
-# --- MENU PRINCIPAL ---
+#MENU PRINCIPAL
 st.sidebar.title("Navigation générale")
 page = st.sidebar.radio(
     "Aller à :", 
     ["Partie 1 - Nations & Postes", "Partie 3 - Ligues & Joueurs"]
 )
 
-# --- ROUTAGE DES PAGES ---
+#ROUTAGE DES PAGES
 if page == "Partie 1 - Nations & Postes":
-    partie1.main()  # Appelle directement la fonction main() du fichier partie1.py
+    partie1.main()  
 
 elif page == "Partie 3 - Ligues & Joueurs":
-    partie3.main()  # Appelle directement la fonction main() du fichier partie3.py
+    partie3.main()
